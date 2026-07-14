@@ -108,10 +108,7 @@ Login digunakan agar aplikasi memiliki alur autentikasi dasar. Untuk MVP, login 
 
 ### Data Login
 
-```text id="ykkn3j"
-Username: admin
-Password: admin123
-```
+Aplikasi menggunakan autentikasi lokal. Pengguna mendaftar akun lewat fitur Register, lalu login dengan akun tersebut. Tidak ada akun default yang di-hard-code; sesi disimpan di SharedPreferences.
 
 ### Validasi
 

@@ -106,12 +106,9 @@ Login Flow digunakan agar pengguna dapat masuk ke aplikasi.
 
 Untuk MVP, login dibuat sederhana tanpa backend.
 
-## 5.2 Data Login Default
+### Data Login Default
 
-```text id="2bu0yw"
-Username: admin
-Password: admin123
-```
+Aplikasi menggunakan autentikasi lokal. Pengguna mendaftar akun lewat fitur Register, lalu login dengan akun tersebut. Tidak ada akun default yang di-hard-code.
 
 ## 5.3 Alur Login Berhasil
 
@@ -585,12 +582,12 @@ Tampilkan username dan informasi aplikasi
 
 ## 15.3 Data yang Ditampilkan
 
-| Data            | Keterangan               |
-| --------------- | ------------------------ |
-| Username        | `admin`                  |
-| Role / Subtitle | PlantCare User           |
-| Saved Plants    | Jumlah data di My Garden |
-| App Version     | 1.0.0                    |
+| Data            | Keterangan                                             |
+| --------------- | ------------------------------------------------------ |
+| Username        | Username akun yang sedang login (dari Register/SQLite) |
+| Role / Subtitle | PlantCare User                                         |
+| Saved Plants    | Jumlah data di My Garden                               |
+| App Version     | 1.0.0                                                  |
 
 ---
 

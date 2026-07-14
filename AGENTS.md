@@ -1,12 +1,12 @@
-# AGENTS.md — Flutter Project Guidelines
+# AGENTS.md — Panduan Proyek Flutter
 
-## Context
+## Konteks
 
-This workspace is a collection of Flutter projects created for university coursework (with Pak Nur). These are beginner-to-intermediate level projects. **Keep code simple, readable, and within what has been taught in class.**
+PlantCare App adalah proyek Flutter untuk tugas kuliah bersama Pak Nur. Kode harus sederhana, mudah dibaca, dan sesuai tingkat pemula hingga menengah. Jangan melakukan overengineering.
 
-## Project Documentation Order
+## Urutan Dokumentasi
 
-Before coding, read documentation in this order:
+Baca dokumen berikut sebelum melakukan coding:
 
 1. `docs/01_prd.md`
 2. `docs/02_mvp.md`
@@ -17,128 +17,69 @@ Before coding, read documentation in this order:
 7. `docs/07_screen_list.md`
 8. `docs/08_implementation_guide.md`
 
-Use UI references from:
+Gunakan referensi UI berikut:
 
-- `docs/ui-reference/01_login_home_plant_detail.png`
-- `docs/ui-reference/02_my_garden_add_plant_edit_plant.png`
-- `docs/ui-reference/03_splash_profile_empty_error_states.png`
+- `docs/ui_reference/01_auth_home_detail.png`
+- `docs/ui_reference/02_garden_form_crud.png`
+- `docs/ui_reference/03_splash_profile_states.png`
 
-Follow `AGENTS.md` strictly. Do not overengineer.
+Dokumentasi Markdown ditulis dalam bahasa Indonesia. Pesan error pada aplikasi ditulis dalam bahasa Inggris agar konsisten.
 
-## Tech Stack (Yang Diizinkan)
+## Tech Stack yang Diizinkan
 
-| Kategori             | Library                                                                                             |
-| -------------------- | --------------------------------------------------------------------------------------------------- |
-| **State Management** | `get: ^4.x` (GetX) — `GetMaterialApp`, `Obx`, `GetxController`, `Get.put`, `Get.to`, `Get.snackbar` |
-| **Database**         | `sqflite`, `path_provider`, `path`                                                                  |
-| **HTTP**             | `http` atau `GetConnect()` bawaan GetX                                                              |
-| **UI pendukung**     | `google_maps_flutter`, `image_picker`, `cached_network_image`, `shared_preferences`, `intl`         |
-| **Lainnya**           | `cupertino_icons`, `flutter_lints`, `flutter_dotenv`                                              |
+| Kategori | Package / alat |
+| --- | --- |
+| State management | `get: ^4.x` — `GetMaterialApp`, `Obx`, `GetxController`, `Get.put`, `Get.to`, `Get.snackbar` |
+| HTTP | `http` |
+| Database lokal | `sqflite`, `path`, `path_provider` |
+| Perangkat dan UI | `image_picker`, `shared_preferences`, `intl`, `cached_network_image`, `geolocator`, `flutter_map`, `latlong2`, `permission_handler`, `video_player` |
+| Environment dan dasar | `flutter_dotenv`, `cupertino_icons`, `flutter_lints` |
 
-**Technology stack choices must be explicitly listed here — do not introduce libraries not listed above without asking.**
+Jangan menambah package di luar daftar tanpa persetujuan. GPS memakai `geolocator`; Google Maps tidak diperlukan.
 
-## Architecture (MVC Sederhana)
+`flutter_map` dan `latlong2` hanya digunakan untuk preview OpenStreetMap sederhana. Tidak perlu API key Google Maps, map picker, routing, atau pencarian alamat.
 
-```
+`permission_handler` hanya digunakan untuk memeriksa izin kamera sebelum mengambil foto atau merekam video. `video_player` hanya digunakan untuk preview video lokal sederhana di form atau My Garden. Jangan gunakan keduanya untuk arsitektur kompleks atau fitur lanjutan.
+
+## Arsitektur: MVC Sederhana
+
+```text
 lib/
   main.dart
-  model/          → Class data dengan fromMap/toMap
-  controller/     → GetxController untuk business logic & state
-  screen/         → Halaman UI (StatelessWidget prefered)
-  dataaccess/     → CRUD SQLite (jika pakai database)
-  provider/       → DatabaseProvider singleton
+  model/       kelas data dengan fromMap/toMap manual
+  controller/  GetxController untuk state dan logika bisnis
+  screen/      halaman UI; utamakan StatelessWidget
+  dataaccess/  query CRUD SQLite
+  provider/    DatabaseProvider singleton
+  utils/       constants dan konfigurasi API
 ```
 
-- **Tidak boleh** menambah layer seperti `repository/`, `usecase/`, `services/`, `bloc/`
-- Semua state pakai `Rx` di controller, bukan `Stream` atau `ValueNotifier`
+- Jangan membuat `repository/`, `usecase/`, `services/`, BLoC, Riverpod, Provider, atau Clean Architecture.
+- Gunakan state Rx di controller, bukan `Stream` atau `ValueNotifier`.
+- Gunakan `Get.to()`, `Get.back()`, `Get.offAll()`, `Get.snackbar()`, dan `Get.dialog()` untuk navigasi/notifikasi.
 
-## Environment & Secrets (.env)
+## Autentikasi dan Sesi
 
-Secrets (API key, dll) **wajib** dipisah dari source code demi keamanan.
+- Register dan login menggunakan tabel SQLite `users` melalui `UserDataAccess`.
+- Sesi disimpan dengan SharedPreferences setelah login berhasil.
+- Splash mengecek sesi; Profile menampilkan username aktif dari `AuthController`/SharedPreferences.
+- Password disimpan plain text hanya untuk demo pembelajaran dan tidak aman untuk aplikasi produksi.
 
-- Pakai package `flutter_dotenv`. Load di `main()` via `await dotenv.load(fileName: ".env")` (butuh `WidgetsFlutterBinding.ensureInitialized()` + daftarin `.env` di `pubspec.yaml` → `assets`).
-- Real key simpan di `.env` (sudah gitignored). Jangan hard-code secret di `lib/`.
-- Commit hanya `.env.example` sebagai template (`PERENUAL_API_KEY=ISI_API_KEY_KAMU`).
-- Baca secret lewat `dotenv.env["PERENUAL_API_KEY"]` — lihat `lib/utils/constants.dart` (getter `apiKey`).
-- Di Android, `.env` dibaca dari asset, bukan file system.
+## Environment dan Keamanan API
 
-## Security API Call (wajib di controller)
+- Muat `.env` di `main()` dengan `WidgetsFlutterBinding.ensureInitialized()` dan `await dotenv.load(fileName: ".env")`.
+- Daftarkan `.env` sebagai asset Flutter pada `pubspec.yaml`.
+- Simpan key Perenual asli hanya di `.env` yang diabaikan Git; commit `.env.example` dengan `PERENUAL_API_KEY=ISI_API_KEY_KAMU`.
+- Baca key hanya melalui getter `apiKey` di `lib/utils/constants.dart`; jangan hard-code di screen/controller.
+- Setiap pemanggilan PlantController harus mengecek key kosong, memakai `try-catch`, mengecek `response.statusCode == 200`, memakai timeout, dan menampilkan `Get.snackbar()` saat gagal.
+- Jangan pernah print, log, atau menampilkan API key.
 
-Setiap pemanggilan HTTP ke API wajib mengikuti aturan berikut:
+## Konvensi Model dan Kode
 
-- **API key tetap di `lib/utils/constants.dart`** (getter `apiKey`), jangan dipindah ke controller.
-- **Jangan print/log/display API key** di mana pun.
-- **Cek `apiKey` kosong** sebelum request (`if (apiKey.isEmpty) -> snackbar, return`).
-- **Gunakan try-catch** di tiap method API call.
-- **Cek `response.statusCode == 200`** sebelum parse JSON.
-- **Beri timeout** pada request (`Future.timeout(Duration(...))` — bawaan Dart, tanpa package baru).
-- **Tampilkan `Get.snackbar`** saat request gagal (timeout / non-200 / exception).
-- Jaga tetap sederhana, ikuti pola `PlantController`. Jangan tambah package baru.
+- Model memakai field public mutable serta `fromMap()`/`toMap()` manual; jangan gunakan freezed, json_serializable, `copyWith`, atau code generation.
+- Gunakan `snake_case.dart`, class PascalCase, member camelCase, package import, dan `const` jika memungkinkan.
+- Form memakai `GlobalKey<FormState>`, `TextFormField`, dan validator.
 
-## Model Conventions
+## Jaga Ruang Lingkup Tetap Sederhana
 
-```dart
-class Product {
-  int id;           // public, mutable — NO private fields
-  String title;     // NO final (kecuali id)
-  dynamic price;    // dynamic untuk number (bukan int/double spesifik)
-
-  Product({required this.id, required this.title, this.price});
-
-  factory Product.fromMap(Map<String, dynamic> map) => Product(
-    id: map["id"],
-    title: map["title"],
-    price: map["price"],
-  );
-
-  Map<String, dynamic> toMap() => {
-    "id": id,
-    "title": title,
-    "price": price,
-  };
-}
-```
-
-- **Jangan gunakan** freezed, json_serializable, copyWith, atau immutable pattern
-- Field public & mutable (kecuali id)
-
-## Coding Style
-
-| Aspek               | Aturan                                                   |
-| ------------------- | -------------------------------------------------------- |
-| **File naming**     | `snake_case.dart`                                        |
-| **Class naming**    | `PascalCase`                                             |
-| **Method/variable** | `camelCase`                                              |
-| **Private members** | Prefix `_`                                               |
-| **Const**           | Gunakan `const` jika memungkinkan                        |
-| **Widget type**     | `StatelessWidget` > `StatefulWidget`                     |
-| **Form**            | `GlobalKey<FormState>`, `TextFormField` dengan validator |
-| **Navigasi**        | `Get.to()` / `Get.back()`                                |
-| **Notifikasi**      | `Get.snackbar()` / `Get.dialog()`                        |
-| **Imports**         | Pakai `package:` (bukan relative path)                   |
-
-## What NOT To Do (Larangan Overengineering)
-
-| ❌ Jangan gunakan                          | ✅ Cukup pakai                          |
-| ------------------------------------------ | --------------------------------------- |
-| BLoC / Riverpod / Provider / Redux         | GetX (`Obx` + `GetxController`)         |
-| freezed / json_serializable / build_runner | `fromMap` / `toMap` manual              |
-| Clean Architecture / DDD / Repository      | MVC sederhana (model-controller-screen) |
-| Unit test / widget test / integration test | —                                       |
-| Advanced DI (get_it, injectable)           | `Get.put()` / `Get.lazyPut()`           |
-| Streams / async\* / rxDart                 | `Rx` variabel + `Obx`                   |
-| State terpisah (loading/error/success)     | `isLoading.obs` + spinner sederhana     |
-| Animasi kompleks / Hero / CustomPainter    | Default Flutter widgets                 |
-| Computed / selectors / memoization         | `Obx(() => ...)` langsung di UI         |
-| Advanced error handling / retry logic      | Minimal try-catch                       |
-| Code generation apapun                     | —                                       |
-
-## Contoh File Referensi
-
-Lihat file berikut sebagai referensi cara penulisan yang benar:
-
-- **Model:** `flutter_restapi/lib/model/product.dart`
-- **Controller:** `flutter_restapi/lib/controller/productcontroller.dart`
-- **DataAccess:** `paknur10_sqlite_crud/flutter-sqlite-crud/lib/dataaccess/contact_dataaccess.dart`
-- **Provider DB:** `paknur10_sqlite_crud/flutter-sqlite-crud/lib/provider/database_provider.dart`
-- **Screen:** `flutter_restapi/lib/screen/home_screen.dart`
+Jangan menambahkan Firebase, upload server, AI detection, Google Maps, dependency injection lanjutan, animasi kompleks, unit/widget/integration test, atau layer arsitektur lain. Path gambar/video lokal dan koordinat disimpan di SQLite.

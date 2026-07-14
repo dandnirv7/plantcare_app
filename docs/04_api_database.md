@@ -49,27 +49,29 @@ API ini digunakan untuk mengambil data tanaman seperti nama tanaman, nama ilmiah
 
 Perenual API membutuhkan API key.
 
-API key disimpan di satu file agar mudah dikelola.
+API key **tidak di-hard-code** di source. Key disimpan di file `.env` (gitignored) dan dibaca saat runtime melalui `flutter_dotenv`.
 
-Rekomendasi file:
+Rekomendasi file konfigurasi:
 
-```text id="z281hn"
+```text
 lib/utils/constants.dart
 ```
 
-Contoh isi:
+Isi `constants.dart` (getter, bukan string literal):
 
-```dart id="37hppq"
+```dart
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 const String baseUrl = "https://perenual.com/api";
-const String apiKey = "ISI_API_KEY_KAMU";
+String get apiKey => dotenv.env["PERENUAL_API_KEY"] ?? "";
 ```
 
 Catatan:
 
 1. Jangan menulis API key berulang-ulang di banyak file.
 2. Jangan menampilkan API key di halaman aplikasi.
-3. Untuk project kuliah, penyimpanan API key di constants masih cukup.
-4. Jika materi security dibahas lebih lanjut, API key dapat dipindahkan ke metode penyimpanan yang lebih aman.
+3. Simpan key asli hanya di `.env`; commit `.env.example` dengan `PERENUAL_API_KEY=ISI_API_KEY_KAMU`.
+4. Jangan pernah print atau log API key.
 
 ---
 
@@ -727,28 +729,35 @@ Gagal mengambil foto
 
 ## 16. Security API
 
-Untuk project ini, security API dibuat sederhana.
+Untuk project ini, security API dibuat sederhana namun rapi.
 
 Aturan:
 
-1. Base URL dan API key disimpan di satu file constants.
-2. API key tidak ditulis langsung di screen.
-3. API request dilakukan dari controller.
-4. Jangan print API key di console.
-5. Jangan tampilkan API key di UI.
-6. Gunakan try-catch saat request API.
+1. Base URL dan API key dikelola di satu file `constants.dart` sebagai getter `apiKey`.
+2. API key asli disimpan di `.env` (gitignored), dibaca via `flutter_dotenv`; tidak di-hard-code di source.
+3. API key tidak ditulis langsung di screen.
+4. API request dilakukan dari controller (`PlantController`).
+5. Jangan print API key di console.
+6. Jangan tampilkan API key di UI.
+7. Sebelum request, cek `apiKey` kosong; jika kosong tampilkan snackbar dan batalkan.
+8. Gunakan try-catch saat request API.
+9. Cek `response.statusCode == 200` sebelum parse JSON.
+10. Beri timeout pada request (mis. 15 detik) agar tidak menggantung.
+11. Jika gagal (timeout / non-200 / exception), tampilkan `Get.snackbar()` dan jangan crash.
 
 File yang disarankan:
 
-```text id="gwmhth"
+```text
 lib/utils/constants.dart
 ```
 
 Isi minimal:
 
-```dart id="odxink"
+```dart
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 const String baseUrl = "https://perenual.com/api";
-const String apiKey = "ISI_API_KEY_KAMU";
+String get apiKey => dotenv.env["PERENUAL_API_KEY"] ?? "";
 ```
 
 ---

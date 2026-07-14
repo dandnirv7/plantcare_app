@@ -52,10 +52,7 @@ Login digunakan sebagai pintu masuk aplikasi. Pada versi awal, login dibuat sede
 
 ### Data Login Default
 
-```text id="dwv9uz"
-Username: admin
-Password: admin123
-```
+Aplikasi menggunakan autentikasi lokal. Pengguna mendaftar akun lewat fitur Register, lalu login dengan akun tersebut. Tidak ada akun default yang di-hard-code.
 
 ### Validasi
 
@@ -460,20 +457,18 @@ Security REST API dibuat sederhana sesuai kebutuhan project kuliah.
 
 ### Implementasi
 
-1. API key disimpan di satu file, misalnya:
-
-```text id="ndzk8r"
-lib/utils/constants.dart
-```
-
+1. API key dikelola sebagai getter `apiKey` di `lib/utils/constants.dart`, dibaca dari `.env` via `flutter_dotenv` — tidak di-hard-code.
 2. API key tidak ditulis berulang di banyak file.
 3. Jika ada token login sederhana, simpan di SharedPreferences.
 4. Request API dibungkus dengan try-catch.
-5. Jangan tampilkan API key di UI.
+5. Sebelum request, cek `apiKey` kosong; jika kosong tampilkan snackbar.
+6. Cek `response.statusCode == 200` sebelum parse JSON.
+7. Beri timeout pada request agar tidak menggantung.
+8. Jangan tampilkan API key di UI.
 
 ### Catatan
 
-Untuk project kuliah, API key tetap bisa terlihat di source code. Namun minimal API key dikelola dengan rapi di satu tempat agar lebih mudah dijelaskan pada sesi Security REST API.
+API key tidak lagi tertulis di source code — disimpan di `.env` (gitignored) dan hanya diakses lewat getter. Ini sudah cukup untuk project kuliah sekaligus menjaga key tidak ikut ter-commit ke repository.
 
 ---
 

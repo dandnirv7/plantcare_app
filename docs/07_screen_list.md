@@ -156,12 +156,9 @@ Login pada versi MVP bersifat sederhana dan tidak menggunakan backend.
 | Username | Wajib diisi |
 | Password | Wajib diisi |
 
-## 4.7 Data Login Default
+### Data Login Default
 
-```text
-Username: admin
-Password: admin123
-```
+Aplikasi menggunakan autentikasi lokal. Pengguna mendaftar akun lewat fitur Register, lalu login dengan akun tersebut. Tidak ada akun default yang di-hard-code.
 
 ## 4.8 Aksi User
 
@@ -574,7 +571,7 @@ Profile Screen digunakan untuk menampilkan informasi user sederhana dan tombol l
 ## 9.8 Catatan Implementasi
 
 1. Profile tidak perlu fitur edit.
-2. Username dapat dibuat statis: `admin`.
+2. Username diambil dari akun hasil registrasi (tidak ada default statis).
 3. App version dapat dibuat statis: `1.0.0`.
 4. Logout menggunakan `Get.offAll()` ke Login Screen.
 

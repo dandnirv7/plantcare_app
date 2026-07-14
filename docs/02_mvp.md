@@ -106,12 +106,9 @@ Pengguna diarahkan ke halaman yang sesuai berdasarkan status login.
 
 Login digunakan agar aplikasi memiliki alur autentikasi dasar. Untuk MVP, login tidak menggunakan backend asli.
 
-### Data Login
+### Data Login Default
 
-```text id="ykkn3j"
-Username: admin
-Password: admin123
-```
+Aplikasi menggunakan autentikasi lokal. Pengguna mendaftar akun lewat fitur Register, lalu login dengan akun tersebut. Tidak ada akun default yang di-hard-code.
 
 ### Validasi
 

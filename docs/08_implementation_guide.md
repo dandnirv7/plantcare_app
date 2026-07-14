@@ -69,7 +69,7 @@ docs/ui-reference/03_splash_profile_empty_error_states.png
 Package yang digunakan dalam project:
 
 ```bash
-flutter pub add get http sqflite path image_picker shared_preferences intl cached_network_image
+flutter pub add get http sqflite path image_picker shared_preferences intl cached_network_image geolocator flutter_dotenv flutter_map latlong2 permission_handler video_player
 ```
 
 Keterangan package:
@@ -80,10 +80,16 @@ Keterangan package:
 | `http`                 | Mengambil data dari REST API                   |
 | `sqflite`              | Database SQLite                                |
 | `path`                 | Mengatur path database SQLite                  |
-| `image_picker`         | Mengambil foto tanaman                         |
+| `image_picker`         | Mengambil foto dan video tanaman               |
 | `shared_preferences`   | Menyimpan status login                         |
 | `intl`                 | Format tanggal                                 |
 | `cached_network_image` | Menampilkan gambar dari URL                    |
+| `geolocator`           | Mengambil latitude dan longitude (GPS)         |
+| `flutter_dotenv`       | Memuat API key dari `.env`                     |
+| `flutter_map`          | Preview peta OpenStreetMap sederhana           |
+| `latlong2`             | Tipe koordinat untuk peta                      |
+| `permission_handler`   | Mengecek izin kamera sebelum memotret          |
+| `video_player`         | Preview video lokal sederhana                  |
 
 Catatan:
 
@@ -199,9 +205,11 @@ Isi minimal:
 
 ```dart
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 const String baseUrl = "https://perenual.com/api";
-const String apiKey = "ISI_API_KEY_KAMU";
+
+String get apiKey => dotenv.env["PERENUAL_API_KEY"] ?? "";
 
 const Color primaryColor = Color(0xFF2E7D32);
 const Color secondaryColor = Color(0xFF66BB6A);
@@ -213,8 +221,8 @@ const String defaultImageMessage = "Data gambar tidak tersedia";
 Catatan:
 
 - Jangan menulis API key langsung di screen.
-- API key cukup diletakkan di satu file ini.
-- Untuk project kuliah, cara ini sudah cukup sederhana.
+- Simpan key asli hanya di `.env` (gitignored); commit `.env.example` sebagai template.
+- Baca key hanya lewat getter `apiKey` ini.
 
 ---
 
@@ -232,11 +240,14 @@ Konsep isi:
 
 ```dart
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:plantcare_app/screen/splash_screen.dart';
 import 'package:plantcare_app/utils/constants.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const PlantCareApp());
 }
 
@@ -262,6 +273,8 @@ class PlantCareApp extends StatelessWidget {
 Catatan:
 
 - Gunakan `GetMaterialApp`, bukan `MaterialApp`.
+- Muat `.env` di `main()` sebelum `runApp` pakai `flutter_dotenv`.
+- Daftarkan `.env` sebagai asset di `pubspec.yaml`.
 - Jangan membuat routing kompleks dulu.
 - Untuk project sederhana, `Get.to()` langsung cukup.
 
@@ -479,10 +492,7 @@ isLoggedIn
 
 Data login default:
 
-```text
-username: admin
-password: admin123
-```
+Autentikasi lokal. Pengguna mendaftar akun lewat fitur Register, lalu login dengan akun tersebut. Tidak ada akun default yang di-hard-code.
 
 Method yang dibutuhkan:
 
@@ -946,7 +956,7 @@ lib/screen/profile_screen.dart
 
 Tugas:
 
-1. Tampilkan username `admin`.
+1. Tampilkan username akun yang sedang login (dari Register/SQLite).
 2. Tampilkan subtitle `PlantCare User`.
 3. Tampilkan jumlah tanaman tersimpan.
 4. Tampilkan app version `1.0.0`.

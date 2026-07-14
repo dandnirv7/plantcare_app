@@ -67,18 +67,17 @@ Fitur yang akan dibuat:
 
 Fitur berikut tidak dikerjakan pada tahap utama:
 
-1. Register user.
-2. Login backend asli.
-3. Firebase.
-4. Push notification.
-5. AI plant detection.
-6. Upload foto ke server.
-7. Maps.
-8. Payment.
-9. Role admin dan user.
-10. Clean Architecture.
-11. Repository pattern.
-12. Unit testing.
+1. Login backend (login tetap lokal via SQLite).
+2. Firebase.
+3. Push notification.
+4. AI plant detection.
+5. Upload foto ke server.
+6. Maps berbasis Google Maps (cukup preview OpenStreetMap sederhana).
+7. Payment.
+8. Role admin dan user.
+9. Clean Architecture.
+10. Repository pattern.
+11. Unit testing.
 
 ---
 
@@ -132,22 +131,28 @@ Catatan:
 
 Package yang digunakan:
 
-```bash id="i2rsnf"
-flutter pub add get http sqflite path image_picker shared_preferences intl cached_network_image
+```bash
+flutter pub add get http sqflite path image_picker shared_preferences intl cached_network_image geolocator flutter_dotenv flutter_map latlong2 permission_handler video_player
 ```
 
 Kegunaan package:
 
-| Package                | Fungsi                          |
-| ---------------------- | ------------------------------- |
-| `get`                  | Navigation dan state management |
-| `http`                 | Mengambil data dari REST API    |
-| `sqflite`              | Database SQLite                 |
-| `path`                 | Path database SQLite            |
-| `image_picker`         | Mengambil foto tanaman          |
-| `shared_preferences`   | Menyimpan status login          |
-| `intl`                 | Format tanggal                  |
-| `cached_network_image` | Menampilkan gambar dari URL     |
+| Package                | Fungsi                                 |
+| ---------------------- | -------------------------------------- |
+| `get`                  | Navigation dan state management        |
+| `http`                 | Mengambil data dari REST API           |
+| `sqflite`              | Database SQLite                        |
+| `path`                 | Path database SQLite                   |
+| `image_picker`         | Mengambil foto dan video tanaman       |
+| `shared_preferences`   | Menyimpan status login                 |
+| `intl`                 | Format tanggal                         |
+| `cached_network_image` | Menampilkan gambar dari URL            |
+| `geolocator`           | Mengambil latitude dan longitude (GPS) |
+| `flutter_dotenv`       | Memuat API key dari `.env`             |
+| `flutter_map`          | Preview peta OpenStreetMap             |
+| `latlong2`             | Tipe koordinat peta                    |
+| `permission_handler`   | Mengecek izin kamera                   |
+| `video_player`         | Preview video lokal                    |
 
 ---
 

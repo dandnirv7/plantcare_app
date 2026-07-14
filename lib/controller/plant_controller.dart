@@ -15,7 +15,7 @@ class PlantController extends GetxController {
 
   bool _hasApiKey() {
     if (apiKey.isEmpty) {
-      Get.snackbar("Error", "API key belum diatur");
+      Get.snackbar("Error", "API key is not configured");
       return false;
     }
     return true;
@@ -40,7 +40,7 @@ class PlantController extends GetxController {
     try {
       http.Response? response = await _get("species-list", {});
       if (response == null || response.statusCode != 200) {
-        Get.snackbar("Gagal", "Gagal mengambil data tanaman");
+        Get.snackbar("Error", "Failed to load plant data");
         return;
       }
       Map<String, dynamic> result = jsonDecode(response.body);
@@ -49,7 +49,7 @@ class PlantController extends GetxController {
           .map((item) => Plant.fromMap(Map<String, dynamic>.from(item)))
           .toList();
     } catch (e) {
-      Get.snackbar("Gagal", "Gagal mengambil data tanaman");
+      Get.snackbar("Error", "Failed to load plant data");
     } finally {
       isLoading.value = false;
     }
@@ -68,7 +68,7 @@ class PlantController extends GetxController {
     try {
       http.Response? response = await _get("species-list", {"q": keyword});
       if (response == null || response.statusCode != 200) {
-        Get.snackbar("Gagal", "Gagal mencari data tanaman");
+        Get.snackbar("Error", "Failed to search plant data");
         return;
       }
       Map<String, dynamic> result = jsonDecode(response.body);
@@ -77,7 +77,7 @@ class PlantController extends GetxController {
           .map((item) => Plant.fromMap(Map<String, dynamic>.from(item)))
           .toList();
     } catch (e) {
-      Get.snackbar("Gagal", "Gagal mencari data tanaman");
+      Get.snackbar("Error", "Failed to search plant data");
     } finally {
       isLoading.value = false;
     }
@@ -89,13 +89,13 @@ class PlantController extends GetxController {
     try {
       http.Response? response = await _get("species/details/$id", {});
       if (response == null || response.statusCode != 200) {
-        Get.snackbar("Gagal", "Gagal mengambil detail tanaman");
+        Get.snackbar("Error", "Failed to load plant details");
         return;
       }
       Map<String, dynamic> result = jsonDecode(response.body);
       selectedPlant.value = Plant.fromMap(result);
     } catch (e) {
-      Get.snackbar("Gagal", "Gagal mengambil detail tanaman");
+      Get.snackbar("Error", "Failed to load plant details");
     } finally {
       isLoading.value = false;
     }

@@ -39,7 +39,7 @@ class _DetailScreenState extends State<DetailScreen> {
     Plant? plant = plantController.selectedPlant.value;
 
     if (plant == null) {
-      Get.snackbar("Gagal", "Data tanaman tidak tersedia");
+      Get.snackbar("Error", "Plant data is unavailable");
       return;
     }
 

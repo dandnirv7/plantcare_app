@@ -35,15 +35,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void searchPlant() {
     String keyword = searchController.text.trim();
-    plantController.searchPlants(keyword);
+    if (keyword.isEmpty) {
+      plantController.fetchPlants();
+    } else {
+      plantController.searchPlants(keyword);
+    }
   }
 
   void openMyGarden() {
-    Get.to(() => const MyGardenScreen());
+    Get.off(() => const MyGardenScreen());
   }
 
   void openProfile() {
-    Get.to(() => const ProfileScreen());
+    Get.off(() => const ProfileScreen());
+  }
+
+  void onBottomNavigationTap(int index) {
+    if (index == 1) openMyGarden();
+    if (index == 2) openProfile();
   }
 
   @override
@@ -73,36 +82,43 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.only(left: 16),
+              height: 54,
+              padding: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(18),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.search, color: subTextColor),
-                  const SizedBox(width: 8),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Icon(Icons.search_rounded, color: primaryColor),
+                  ),
                   Expanded(
                     child: TextField(
                       controller: searchController,
                       decoration: const InputDecoration(
                         hintText: "Search plants...",
                         border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        isDense: true,
                       ),
                       onSubmitted: (value) => searchPlant(),
                     ),
                   ),
-                  IconButton(
-                    onPressed: searchPlant,
-                    icon: const Icon(Icons.search, color: primaryColor),
-                    tooltip: "Search",
+                  Material(
+                    color: primaryColor,
+                    borderRadius: BorderRadius.circular(14),
+                    child: InkWell(
+                      onTap: searchPlant,
+                      borderRadius: BorderRadius.circular(14),
+                      child: const SizedBox(
+                        width: 42,
+                        height: 42,
+                        child: Icon(Icons.arrow_forward, color: Colors.white),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -162,6 +178,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: subTextColor,
+        onTap: onBottomNavigationTap,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_florist),
+            label: "My Garden",
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
       ),
     );
   }

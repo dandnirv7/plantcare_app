@@ -31,22 +31,22 @@ class AuthController extends GetxController {
     username = username.trim();
 
     if (username.isEmpty) {
-      Get.snackbar("Gagal", "Username wajib diisi");
+      Get.snackbar("Error", "Username is required");
       return;
     }
 
     if (password.isEmpty) {
-      Get.snackbar("Gagal", "Password wajib diisi");
+      Get.snackbar("Error", "Password is required");
       return;
     }
 
     if (confirmPassword.isEmpty) {
-      Get.snackbar("Gagal", "Konfirmasi password wajib diisi");
+      Get.snackbar("Error", "Password confirmation is required");
       return;
     }
 
     if (password != confirmPassword) {
-      Get.snackbar("Gagal", "Password dan konfirmasi password tidak sama");
+      Get.snackbar("Error", "Password confirmation does not match");
       return;
     }
 
@@ -56,7 +56,7 @@ class AuthController extends GetxController {
       User? existingUser = await userDataAccess.getUserByUsername(username);
 
       if (existingUser != null) {
-        Get.snackbar("Gagal", "Username sudah digunakan");
+        Get.snackbar("Error", "Username is already in use");
         return;
       }
 
@@ -67,10 +67,10 @@ class AuthController extends GetxController {
       );
       await userDataAccess.insertUser(user);
 
-      Get.snackbar("Berhasil", "Pendaftaran berhasil, silakan login");
-      Get.back();
+      Get.off(() => const LoginScreen());
+      Get.snackbar("Success", "Registration successful. Please log in.");
     } catch (error) {
-      Get.snackbar("Gagal", "Pendaftaran gagal");
+      Get.snackbar("Error", "Registration failed");
     } finally {
       isLoading.value = false;
     }
@@ -80,12 +80,12 @@ class AuthController extends GetxController {
     username = username.trim();
 
     if (username.isEmpty) {
-      Get.snackbar("Gagal", "Username wajib diisi");
+      Get.snackbar("Error", "Username is required");
       return;
     }
 
     if (password.isEmpty) {
-      Get.snackbar("Gagal", "Password wajib diisi");
+      Get.snackbar("Error", "Password is required");
       return;
     }
 
@@ -104,13 +104,13 @@ class AuthController extends GetxController {
         usernameController.clear();
         passwordController.clear();
 
-        Get.snackbar("Berhasil", "Login berhasil");
+        Get.snackbar("Success", "Login successful");
         Get.offAll(() => const HomeScreen());
       } else {
-        Get.snackbar("Gagal", "Username atau password salah");
+        Get.snackbar("Error", "Invalid username or password");
       }
     } catch (error) {
-      Get.snackbar("Gagal", "Username atau password salah");
+      Get.snackbar("Error", "Invalid username or password");
     } finally {
       isLoading.value = false;
     }
@@ -124,7 +124,7 @@ class AuthController extends GetxController {
     isLoggedIn.value = false;
     currentUsername.value = "";
     Get.offAll(() => const LoginScreen());
-    Get.snackbar("Berhasil", "Logout berhasil");
+    Get.snackbar("Success", "Logout successful");
   }
 
   void showLogoutDialog() {

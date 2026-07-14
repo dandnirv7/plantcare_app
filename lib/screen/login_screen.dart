@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Username wajib diisi";
+                      return "Username is required";
                     }
                     return null;
                   },
@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Password wajib diisi";
+                      return "Password is required";
                     }
                     return null;
                   },

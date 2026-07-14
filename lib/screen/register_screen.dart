@@ -63,7 +63,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return "Username wajib diisi";
+                      return "Username is required";
                     }
                     return null;
                   },
@@ -78,10 +78,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Password wajib diisi";
+                      return "Password is required";
                     }
                     if (value.length < 6) {
-                      return "Password minimal 6 karakter";
+                      return "Password must be at least 6 characters";
                     }
                     return null;
                   },
@@ -96,10 +96,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Konfirmasi password wajib diisi";
+                      return "Password confirmation is required";
                     }
                     if (value != passwordController.text) {
-                      return "Password dan konfirmasi password tidak sama";
+                      return "Password confirmation does not match";
                     }
                     return null;
                   },

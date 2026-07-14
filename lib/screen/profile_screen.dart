@@ -33,6 +33,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Get.off(() => const MyGardenScreen());
   }
 
+  void onBottomNavigationTap(int index) {
+    if (index == 0) openHome();
+    if (index == 1) openMyGarden();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,6 +138,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 2,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: subTextColor,
+        onTap: onBottomNavigationTap,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_florist),
+            label: "My Garden",
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
       ),
     );
   }

@@ -454,4 +454,4 @@ Fokus utama project:
 - Menerapkan security API call sederhana
 - Menjaga struktur project tetap mudah dipahami
 
-Project ini sengaja dibuat dengan pendekatan sederhana agar sesuai dengan pembelajaran kelas dan mudah dipresentasikan saat UAS.
+Project ini sengaja dibuat dengan pendekatan sederhana agar sesuai dengan pembelajaran kelas dan mudah dipresentasikan saat UAS mata kuliah pemrograman mobile.

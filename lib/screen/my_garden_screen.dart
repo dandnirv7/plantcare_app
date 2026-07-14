@@ -2,12 +2,15 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:plantcare_app/controller/garden_controller.dart';
 import 'package:plantcare_app/model/my_plant.dart';
 import 'package:plantcare_app/screen/home_screen.dart';
 import 'package:plantcare_app/screen/plant_form_screen.dart';
 import 'package:plantcare_app/screen/profile_screen.dart';
+import 'package:plantcare_app/screen/video_preview_screen.dart';
 import 'package:plantcare_app/utils/constants.dart';
 
 class MyGardenScreen extends StatefulWidget {
@@ -25,11 +28,13 @@ class _MyGardenScreenState extends State<MyGardenScreen> {
   @override
   void initState() {
     super.initState();
+    gardenController.setGardenSearchQuery("");
     gardenController.loadPlants();
   }
 
   void openAddPlant() {
     gardenController.clearImage();
+    gardenController.clearVideo();
     Get.to(() => const PlantFormScreen(), arguments: {"mode": "add"});
   }
 
@@ -49,7 +54,12 @@ class _MyGardenScreenState extends State<MyGardenScreen> {
   }
 
   void openProfile() {
-    Get.to(() => const ProfileScreen());
+    Get.off(() => const ProfileScreen());
+  }
+
+  void onBottomNavigationTap(int index) {
+    if (index == 0) openHome();
+    if (index == 2) openProfile();
   }
 
   @override
@@ -127,6 +137,20 @@ class _MyGardenScreenState extends State<MyGardenScreen> {
               );
             }
 
+            String query = gardenController.gardenSearchQuery.value
+                .trim()
+                .toLowerCase();
+            List<MyPlant> filteredPlants = gardenController.myPlants.where((plant) {
+              String searchableText = [
+                plant.name,
+                plant.scientificName,
+                plant.watering,
+                plant.sunlight,
+                plant.note,
+              ].join(" ").toLowerCase();
+              return searchableText.contains(query);
+            }).toList();
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -138,15 +162,18 @@ class _MyGardenScreenState extends State<MyGardenScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                const SizedBox(height: 12),
+                _gardenSearchField(),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: gardenController.myPlants.length,
-                    itemBuilder: (context, index) {
-                      MyPlant plant = gardenController.myPlants[index];
-                      return _gardenCard(plant);
-                    },
-                  ),
+                  child: filteredPlants.isEmpty
+                      ? _emptySearchState()
+                      : ListView.builder(
+                          itemCount: filteredPlants.length,
+                          itemBuilder: (context, index) {
+                            return _gardenCard(filteredPlants[index]);
+                          },
+                        ),
                 ),
               ],
             );
@@ -158,10 +185,73 @@ class _MyGardenScreenState extends State<MyGardenScreen> {
         backgroundColor: primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: subTextColor,
+        onTap: onBottomNavigationTap,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_florist),
+            label: "My Garden",
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
+      ),
+    );
+  }
+
+  Widget _gardenSearchField() {
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: TextField(
+        onChanged: gardenController.setGardenSearchQuery,
+        decoration: const InputDecoration(
+          icon: Icon(Icons.search, color: primaryColor),
+          hintText: "Search saved plants...",
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _emptySearchState() {
+    return const Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.search_off, color: secondaryColor, size: 58),
+          SizedBox(height: 12),
+          Text(
+            "No saved plants found",
+            style: TextStyle(
+              color: textColor,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            "Try searching with another keyword.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: subTextColor),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _gardenCard(MyPlant plant) {
+    LatLng? location = _plantLocation(plant);
+
     return Card(
       color: Colors.white,
       elevation: 2,
@@ -171,58 +261,82 @@ class _MyGardenScreenState extends State<MyGardenScreen> {
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _plantImage(plant),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    plant.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: textColor,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    plant.scientificName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: subTextColor,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _infoRow(Icons.water_drop, plant.watering),
-                  const SizedBox(height: 8),
-                  _infoRow(Icons.wb_sunny, plant.sunlight),
-                  const SizedBox(height: 10),
-                  _locationInfo(plant),
-                ],
-              ),
-            ),
-            Column(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                IconButton(
-                  onPressed: () => openEditPlant(plant),
-                  icon: const Icon(Icons.edit_outlined, color: primaryColor),
-                  tooltip: "Edit",
+                _plantImage(plant),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        plant.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: textColor,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        plant.scientificName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: subTextColor,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _infoRow(Icons.water_drop, plant.watering),
+                      const SizedBox(height: 8),
+                      _infoRow(Icons.wb_sunny, plant.sunlight),
+                      const SizedBox(height: 10),
+                      _locationInfo(plant, location),
+                      const SizedBox(height: 8),
+                      _videoInfo(plant),
+                    ],
+                  ),
                 ),
-                IconButton(
-                  onPressed: () => gardenController.showDeleteDialog(plant),
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  tooltip: "Delete",
+                Column(
+                  children: [
+                    IconButton(
+                      onPressed: () => openEditPlant(plant),
+                      icon: const Icon(Icons.edit_outlined, color: primaryColor),
+                      tooltip: "Edit",
+                    ),
+                    IconButton(
+                      onPressed: () => gardenController.showDeleteDialog(plant),
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      tooltip: "Delete",
+                    ),
+                  ],
                 ),
               ],
             ),
+            if (location != null) ...[
+              const SizedBox(height: 14),
+              _locationMap(location),
+            ],
+            if (plant.localVideoPath.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => Get.to(
+                    () => VideoPreviewScreen(videoPath: plant.localVideoPath),
+                  ),
+                  icon: const Icon(Icons.play_circle_outline),
+                  label: const Text("Preview Video"),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -301,8 +415,20 @@ class _MyGardenScreenState extends State<MyGardenScreen> {
     );
   }
 
-  Widget _locationInfo(MyPlant plant) {
-    if (plant.latitude.isEmpty || plant.longitude.isEmpty) {
+  LatLng? _plantLocation(MyPlant plant) {
+    double? latitude = double.tryParse(plant.latitude);
+    double? longitude = double.tryParse(plant.longitude);
+
+    if (latitude == null || longitude == null) return null;
+    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+      return null;
+    }
+
+    return LatLng(latitude, longitude);
+  }
+
+  Widget _locationInfo(MyPlant plant, LatLng? location) {
+    if (location == null) {
       return const Text(
         "Location not saved",
         style: TextStyle(color: subTextColor, fontSize: 12),
@@ -326,6 +452,64 @@ class _MyGardenScreenState extends State<MyGardenScreen> {
         ),
         Text(
           "Lng: ${plant.longitude}",
+          style: const TextStyle(color: textColor, fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  Widget _locationMap(LatLng location) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        height: 160,
+        width: double.infinity,
+        child: FlutterMap(
+          options: MapOptions(
+            initialCenter: location,
+            initialZoom: 15,
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.drag |
+                  InteractiveFlag.pinchZoom |
+                  InteractiveFlag.doubleTapZoom,
+            ),
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+              userAgentPackageName: "com.example.plantcare_app",
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: location,
+                  width: 40,
+                  height: 40,
+                  child: const Icon(
+                    Icons.location_pin,
+                    color: Colors.red,
+                    size: 40,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _videoInfo(MyPlant plant) {
+    return Row(
+      children: [
+        Icon(
+          Icons.videocam_outlined,
+          color: plant.localVideoPath.isEmpty ? subTextColor : primaryColor,
+          size: 18,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          plant.localVideoPath.isEmpty ? "Video: Not saved" : "Video: Available",
           style: const TextStyle(color: textColor, fontSize: 12),
         ),
       ],

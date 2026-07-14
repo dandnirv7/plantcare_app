@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:plantcare_app/dataaccess/my_plant_dataaccess.dart';
 import 'package:plantcare_app/model/my_plant.dart';
 
@@ -9,6 +10,8 @@ class GardenController extends GetxController {
   var myPlants = <MyPlant>[].obs;
   var isLoading = false.obs;
   var imagePath = "".obs;
+  var videoPath = "".obs;
+  var gardenSearchQuery = "".obs;
   var latitude = "".obs;
   var longitude = "".obs;
   var isGettingLocation = false.obs;
@@ -21,7 +24,7 @@ class GardenController extends GetxController {
     try {
       myPlants.value = await myPlantDataAccess.getAllPlants();
     } catch (e) {
-      Get.snackbar("Gagal", "Terjadi kesalahan database");
+      Get.snackbar("Error", "A database error occurred");
     } finally {
       isLoading.value = false;
     }
@@ -31,10 +34,10 @@ class GardenController extends GetxController {
     try {
       await myPlantDataAccess.insertPlant(plant);
       await loadPlants();
-      Get.snackbar("Berhasil", "Tanaman berhasil disimpan");
+      Get.snackbar("Success", "Plant saved successfully");
       return true;
     } catch (e) {
-      Get.snackbar("Gagal", "Tanaman gagal disimpan");
+      Get.snackbar("Error", "Failed to save plant");
       return false;
     }
   }
@@ -43,10 +46,10 @@ class GardenController extends GetxController {
     try {
       await myPlantDataAccess.updatePlant(plant);
       await loadPlants();
-      Get.snackbar("Berhasil", "Tanaman berhasil diperbarui");
+      Get.snackbar("Success", "Plant updated successfully");
       return true;
     } catch (e) {
-      Get.snackbar("Gagal", "Tanaman gagal diperbarui");
+      Get.snackbar("Error", "Failed to update plant");
       return false;
     }
   }
@@ -55,9 +58,9 @@ class GardenController extends GetxController {
     try {
       await myPlantDataAccess.deletePlant(id);
       await loadPlants();
-      Get.snackbar("Berhasil", "Tanaman berhasil dihapus");
+      Get.snackbar("Success", "Plant deleted successfully");
     } catch (e) {
-      Get.snackbar("Gagal", "Tanaman gagal dihapus");
+      Get.snackbar("Error", "Failed to delete plant");
     }
   }
 
@@ -90,6 +93,8 @@ class GardenController extends GetxController {
   }
 
   Future<void> pickImageFromCamera() async {
+    if (!await requestCameraPermission()) return;
+
     try {
       ImagePicker picker = ImagePicker();
       XFile? image = await picker.pickImage(source: ImageSource.camera);
@@ -98,7 +103,7 @@ class GardenController extends GetxController {
         imagePath.value = image.path;
       }
     } catch (e) {
-      Get.snackbar("Gagal", "Gagal mengambil foto tanaman");
+      Get.snackbar("Error", "Failed to capture plant photo");
     }
   }
 
@@ -110,13 +115,69 @@ class GardenController extends GetxController {
     imagePath.value = path;
   }
 
+  Future<void> pickVideoFromCamera() async {
+    if (!await requestCameraPermission()) return;
+
+    try {
+      ImagePicker picker = ImagePicker();
+      XFile? video = await picker.pickVideo(source: ImageSource.camera);
+
+      if (video != null) {
+        videoPath.value = video.path;
+        Get.snackbar("Success", "Plant video recorded successfully");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to record plant video");
+    }
+  }
+
+  void clearVideo() {
+    videoPath.value = "";
+  }
+
+  void setVideoPath(String path) {
+    videoPath.value = path;
+  }
+
+  void setGardenSearchQuery(String value) {
+    gardenSearchQuery.value = value;
+  }
+
+  Future<bool> requestCameraPermission() async {
+    try {
+      PermissionStatus status = await Permission.camera.status;
+
+      if (status.isGranted) return true;
+
+      status = await Permission.camera.request();
+      if (status.isGranted) return true;
+
+      if (status.isPermanentlyDenied) {
+        Get.snackbar(
+          "Camera Permission Permanently Denied",
+          "Enable camera permission in the app settings.",
+        );
+        return false;
+      }
+
+      Get.snackbar(
+        "Camera Permission Denied",
+        "Camera permission is required to take photos or record videos.",
+      );
+      return false;
+    } catch (e) {
+      Get.snackbar("Error", "Failed to check camera permission.");
+      return false;
+    }
+  }
+
   Future<void> getCurrentLocation() async {
     isGettingLocation.value = true;
 
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        Get.snackbar("Lokasi Tidak Aktif", "Aktifkan GPS terlebih dahulu");
+        Get.snackbar("Location Disabled", "Please turn on GPS first");
         return;
       }
 
@@ -127,23 +188,23 @@ class GardenController extends GetxController {
 
       if (permission == LocationPermission.deniedForever) {
         Get.snackbar(
-          "Izin Ditolak Permanen",
-          "Aktifkan izin lokasi dari pengaturan aplikasi",
+          "Permission Permanently Denied",
+          "Enable location permission in the app settings",
         );
         return;
       }
 
       if (permission == LocationPermission.denied) {
-        Get.snackbar("Izin Ditolak", "Aplikasi membutuhkan izin lokasi");
+        Get.snackbar("Permission Denied", "The app needs location permission");
         return;
       }
 
       Position position = await Geolocator.getCurrentPosition();
       latitude.value = position.latitude.toString();
       longitude.value = position.longitude.toString();
-      Get.snackbar("Berhasil", "Lokasi berhasil diambil");
+      Get.snackbar("Success", "Location retrieved successfully");
     } catch (e) {
-      Get.snackbar("Gagal", "Gagal mengambil lokasi");
+      Get.snackbar("Error", "Failed to retrieve location");
     } finally {
       isGettingLocation.value = false;
     }

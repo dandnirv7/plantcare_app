@@ -23,7 +23,7 @@ class DatabaseProvider {
 
     return openDatabase(
       databasePath,
-      version: 3,
+      version: 4,
       onCreate: createDatabase,
       onUpgrade: upgradeDatabase,
     );
@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS my_garden (
   scientific_name TEXT,
   image_url TEXT,
   local_image_path TEXT,
+  local_video_path TEXT,
   watering TEXT,
   sunlight TEXT,
   note TEXT,
@@ -62,6 +63,10 @@ CREATE TABLE IF NOT EXISTS my_garden (
     if (oldVersion < 3) {
       await addLocationColumns(db);
     }
+
+    if (oldVersion < 4) {
+      await addVideoColumn(db);
+    }
   }
 
   Future<void> createUsersTable(Database db) async {
@@ -82,6 +87,12 @@ CREATE TABLE IF NOT EXISTS users (
 
     try {
       await db.execute("ALTER TABLE my_garden ADD COLUMN longitude TEXT");
+    } catch (e) {}
+  }
+
+  Future<void> addVideoColumn(Database db) async {
+    try {
+      await db.execute("ALTER TABLE my_garden ADD COLUMN local_video_path TEXT");
     } catch (e) {}
   }
 }

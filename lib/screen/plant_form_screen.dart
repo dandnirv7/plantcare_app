@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:plantcare_app/controller/garden_controller.dart';
 import 'package:plantcare_app/model/my_plant.dart';
+import 'package:plantcare_app/screen/video_preview_screen.dart';
 import 'package:plantcare_app/utils/constants.dart';
 
 class PlantFormScreen extends StatefulWidget {
@@ -52,12 +53,14 @@ class _PlantFormScreenState extends State<PlantFormScreen> {
         sunlightController.text = editPlant!.sunlight;
         noteController.text = editPlant!.note;
         gardenController.setImagePath(editPlant!.localImagePath);
+        gardenController.setVideoPath(editPlant!.localVideoPath);
         gardenController.setLocation(editPlant!.latitude, editPlant!.longitude);
         return;
       }
     }
 
     gardenController.clearImage();
+    gardenController.clearVideo();
     gardenController.clearLocation();
   }
 
@@ -86,6 +89,7 @@ class _PlantFormScreenState extends State<PlantFormScreen> {
         scientificName: scientificNameController.text.trim(),
         imageUrl: editPlant!.imageUrl,
         localImagePath: gardenController.imagePath.value,
+        localVideoPath: gardenController.videoPath.value,
         watering: wateringController.text.trim(),
         sunlight: sunlightController.text.trim(),
         note: noteController.text.trim(),
@@ -106,6 +110,7 @@ class _PlantFormScreenState extends State<PlantFormScreen> {
         scientificName: scientificNameController.text.trim(),
         imageUrl: "",
         localImagePath: gardenController.imagePath.value,
+        localVideoPath: gardenController.videoPath.value,
         watering: wateringController.text.trim(),
         sunlight: sunlightController.text.trim(),
         note: noteController.text.trim(),
@@ -119,6 +124,7 @@ class _PlantFormScreenState extends State<PlantFormScreen> {
 
     if (success) {
       gardenController.clearImage();
+      gardenController.clearVideo();
       gardenController.clearLocation();
       Get.back();
     }
@@ -153,7 +159,18 @@ class _PlantFormScreenState extends State<PlantFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Text(
+                "Media",
+                style: TextStyle(
+                  color: primaryColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 10),
               _photoArea(),
+              const SizedBox(height: 12),
+              _videoArea(),
               const SizedBox(height: 22),
               _locationArea(),
               const SizedBox(height: 22),
@@ -346,6 +363,64 @@ class _PlantFormScreenState extends State<PlantFormScreen> {
     );
   }
 
+  Widget _videoArea() {
+    return Obx(
+      () => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFCFD8DC)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.videocam_outlined, color: primaryColor),
+                const SizedBox(width: 8),
+                Text(
+                  gardenController.videoPath.value.isEmpty
+                      ? "No video recorded"
+                      : "Video saved",
+                  style: const TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: gardenController.pickVideoFromCamera,
+                icon: const Icon(Icons.videocam_outlined),
+                label: const Text("Rekam Video"),
+              ),
+            ),
+            if (gardenController.videoPath.value.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => Get.to(
+                    () => VideoPreviewScreen(
+                      videoPath: gardenController.videoPath.value,
+                    ),
+                  ),
+                  icon: const Icon(Icons.play_circle_outline),
+                  label: const Text("Preview Video"),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _locationArea() {
     return Obx(
       () => Container(
@@ -423,7 +498,7 @@ class _PlantFormScreenState extends State<PlantFormScreen> {
             maxLines: maxLines,
             validator: (value) {
               if (isRequired && (value == null || value.trim().isEmpty)) {
-                return "$label wajib diisi";
+                return "$label is required";
               }
 
               return null;

@@ -5,6 +5,7 @@ class MyPlant {
   String scientificName;
   String imageUrl;
   String localImagePath;
+  String localVideoPath;
   String watering;
   String sunlight;
   String note;
@@ -19,6 +20,7 @@ class MyPlant {
     required this.scientificName,
     required this.imageUrl,
     required this.localImagePath,
+    this.localVideoPath = "",
     required this.watering,
     required this.sunlight,
     required this.note,
@@ -34,6 +36,7 @@ class MyPlant {
         scientificName: map["scientific_name"] ?? "",
         imageUrl: map["image_url"] ?? "",
         localImagePath: map["local_image_path"] ?? "",
+        localVideoPath: map["local_video_path"] ?? "",
         watering: map["watering"] ?? "",
         sunlight: map["sunlight"] ?? "",
         note: map["note"] ?? "",
@@ -49,6 +52,7 @@ class MyPlant {
         "scientific_name": scientificName,
         "image_url": imageUrl,
         "local_image_path": localImagePath,
+        "local_video_path": localVideoPath,
         "watering": watering,
         "sunlight": sunlight,
         "note": note,
